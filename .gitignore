@@ -25,3 +25,8 @@ vendor/
 # OS
 .DS_Store
 Thumbs.db
+
+# CI / GitHub Actions Runner
+actions-runner/
+.runner
+_work/

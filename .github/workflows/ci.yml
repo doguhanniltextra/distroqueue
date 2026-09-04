@@ -1,0 +1,95 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  lint:
+    name: Lint & Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          check-latest: true
+
+      - name: Verify Dependencies
+        run: |
+          go mod tidy
+          git diff --exit-code go.mod go.sum
+
+      - name: Security Audit (govulncheck)
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+          args: --timeout=5m
+
+  test-matrix:
+    name: Concurrency & Race Matrix
+    needs: lint
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        go-version: ['1.22', '1.23']
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Run Unit & Concurrency Tests with Race Detector
+        run: go test -v -race -count=3 ./...
+
+  stress-and-chaos:
+    name: Stress & Chaos Resilience Tests
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Run Stress & Chaos Suite
+        run: go test -v -race -timeout=5m ./test/...
+
+  benchmark-check:
+    name: Performance & Allocation Check
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Run Benchmarks
+        run: go test -run=^$ -bench=. -benchmem ./test | tee bench_output.txt
+
+      - name: Assert Zero Allocations for In-Memory Lock Sim
+        run: |
+          grep "BenchmarkInMemoryDistLockSim" bench_output.txt | grep "0 allocs/op" || (echo "Performance Regression: Memory allocation detected in Lock Benchmark!" && exit 1)
