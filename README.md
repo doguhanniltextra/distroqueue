@@ -78,7 +78,7 @@ Ran on Intel Core i5-12400F:
 | `BenchmarkQueuePushPop` | **2,115,703 ops/sec** | `575.8 ns/op` | `232 B/op (4 allocs)` |
 
 > [!NOTE]
-> **Honest Scope Disclaimer**: `BenchmarkInMemoryDistLockSim` measures the raw synchronization and TTL algorithm throughput of our in-memory core engine primitive (`sync.Mutex` + lease tracking without heap allocations). It does **not** include network I/O or TCP roundtrips typical of remote Redis/etcd clusters.
+> **Scope Disclaimer**: `BenchmarkInMemoryDistLockSim` measures the raw synchronization and TTL algorithm throughput of our in-memory core engine primitive (`sync.Mutex` + lease tracking without heap allocations). It does **not** include network I/O or TCP roundtrips typical of remote Redis/etcd clusters.
 
 ---
 
