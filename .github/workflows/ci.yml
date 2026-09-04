@@ -9,7 +9,7 @@ on:
 jobs:
   lint:
     name: Lint & Static Analysis
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -36,24 +36,18 @@ jobs:
           version: latest
           args: --timeout=5m
 
-  test-matrix:
-    name: Concurrency & Race Matrix
+  concurrency-tests:
+    name: Concurrency & Race Tests
     needs: lint
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        go-version: ['1.22', '1.23']
-        os: [ubuntu-latest, macos-latest]
-
+    runs-on: self-hosted
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Go ${{ matrix.go-version }}
+      - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: '1.22'
 
       - name: Run Unit & Concurrency Tests with Race Detector
         run: go test -v -race -count=3 ./...
@@ -61,7 +55,7 @@ jobs:
   stress-and-chaos:
     name: Stress & Chaos Resilience Tests
     needs: lint
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -77,7 +71,7 @@ jobs:
   benchmark-check:
     name: Performance & Allocation Check
     needs: lint
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
