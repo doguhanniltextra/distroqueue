@@ -5,11 +5,12 @@ on:
     branches: [ master, main ]
   pull_request:
     branches: [ master, main ]
+  workflow_dispatch:
 
 jobs:
   lint:
     name: Lint & Static Analysis
-    runs-on: self-hosted
+    runs-on: [self-hosted, linux]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -39,7 +40,7 @@ jobs:
   concurrency-tests:
     name: Concurrency & Race Tests
     needs: lint
-    runs-on: self-hosted
+    runs-on: [self-hosted, linux]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -55,7 +56,7 @@ jobs:
   stress-and-chaos:
     name: Stress & Chaos Resilience Tests
     needs: lint
-    runs-on: self-hosted
+    runs-on: [self-hosted, linux]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -71,7 +72,7 @@ jobs:
   benchmark-check:
     name: Performance & Allocation Check
     needs: lint
-    runs-on: self-hosted
+    runs-on: [self-hosted, linux]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
