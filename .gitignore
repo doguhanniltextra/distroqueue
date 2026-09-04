@@ -9,6 +9,9 @@
 *.dylib
 *.test
 *.out
+distributed-queue
+distroqueue
+bin/
 
 # Go module cache
 vendor/
